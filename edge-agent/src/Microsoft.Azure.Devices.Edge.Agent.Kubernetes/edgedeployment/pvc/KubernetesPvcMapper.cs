@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.EdgeDeployment.Pvc
 
         bool ShouldCreatePvc(Mount mount)
         {
-            if (!mount.Type.Equals("volume", StringComparison.InvariantCultureIgnoreCase))
+            if (mount?.Type == null || !mount.Type.Equals("volume", StringComparison.InvariantCultureIgnoreCase))
             {
                 return false;
             }
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.EdgeDeployment.Pvc
 
         V1PersistentVolumeClaim ExtractPvc(KubernetesModule module, Mount mount, IDictionary<string, string> labels)
         {
-            string volumeName = KubeUtils.SanitizeK8sValue(mount.Source);
+            string volumeName = KubeUtils.SanitizeDNSLabel(mount.Source);
             string pvcName = volumeName;
             bool readOnly = mount.ReadOnly;
 

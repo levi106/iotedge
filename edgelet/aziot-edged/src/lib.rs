@@ -106,8 +106,13 @@ const AUTHSCHEME_KEY: &str = "IOTEDGE_AUTHSCHEME";
 /// This is the key for the edge runtime mode.
 const EDGE_RUNTIME_MODE_KEY: &str = "Mode";
 
-/// This is the edge runtime mode - it should be iotedged, when aziot-edged starts edge runtime in single node mode.
+/// This is the edge runtime mode - it should be iotedged, when iotedged starts edge runtime in single node mode.
+#[cfg(feature = "runtime-docker")]
 const EDGE_RUNTIME_MODE: &str = "iotedged";
+
+/// This is the edge runtime mode - it should be kubernetes, when iotedged starts edge runtime in kubernetes mode.
+#[cfg(feature = "runtime-kubernetes")]
+const EDGE_RUNTIME_MODE: &str = "kubernetes";
 
 /// This is the key for the largest API version that this edgelet supports
 const API_VERSION_KEY: &str = "IOTEDGE_APIVERSION";
@@ -637,6 +642,17 @@ where
     let (workload_uri, management_uri) = (
         settings.connect().workload_uri().to_string(),
         settings.connect().management_uri().to_string(),
+    );
+    #[cfg(feature = "runtime-kubernetes")]
+    let (workload_uri, management_uri) = (
+        format!(
+            "http://localhost:{}",
+            settings.connect().workload_uri().port().unwrap_or(80u16)
+        ),
+        format!(
+            "http://localhost:{}",
+            settings.connect().management_uri().port().unwrap_or(80u16)
+        ),
     );
 
     env.insert(WORKLOAD_URI_KEY.to_string(), workload_uri);

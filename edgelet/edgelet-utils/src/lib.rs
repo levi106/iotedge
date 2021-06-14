@@ -59,7 +59,19 @@ const DNS_MAX_SIZE: usize = 63;
 ///  - must start with an alphabet
 ///  - must end with an alphanumeric character
 pub fn sanitize_dns_label(name: &str) -> String {
-    name.trim_start_matches(|c: char| !c.is_ascii_alphabetic())
+    sanitize_dns_label_with(name, char::is_ascii_alphabetic)
+}
+
+/// The name returned from here must conform to following rules (as per RFC 1035/1123):
+///  - length must be <= 63 characters
+///  - must be all lower case alphanumeric characters or '-'
+///  - must start and end with an alphanumeric character
+pub fn sanitize_dns_label_rfc1123(name: &str) -> String {
+    sanitize_dns_label_with(name, char::is_ascii_alphanumeric)
+}
+
+fn sanitize_dns_label_with(name: &str, start_criteria: fn(&char) -> bool) -> String {
+    name.trim_start_matches(|c: char| !start_criteria(&c))
         .trim_end_matches(|c: char| !c.is_ascii_alphanumeric())
         .to_lowercase()
         .chars()

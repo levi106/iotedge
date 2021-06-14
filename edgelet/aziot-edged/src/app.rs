@@ -6,6 +6,8 @@ use log::info;
 
 #[cfg(feature = "runtime-docker")]
 use edgelet_docker::Settings;
+#[cfg(feature = "runtime-kubernetes")]
+use edgelet_kube::Settings;
 
 use crate::error::{Error, ErrorKind, InitializeErrorReason};
 use crate::logging;
@@ -27,7 +29,7 @@ pub fn init() -> Result<Settings, Error> {
     info!("Starting Azure IoT Edge Module Runtime");
     info!("Version - {}", edgelet_core::version_with_source_version());
 
-    let settings = edgelet_docker::Settings::new()
+    let settings = Settings::new()
         .context(ErrorKind::Initialize(InitializeErrorReason::LoadSettings))?;
     Ok(settings)
 }

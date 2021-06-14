@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.IntegrationTest
             var moduleName = "module-a";
             var deviceSelector = $"{Kubernetes.Constants.K8sEdgeDeviceLabel}=deviceid";
             var moduleLifeCycleManager = this.CreateModuleLifeCycleManager(moduleName);
-            var persistentVolumeName = "pvname";
+            var persistentVolumeName = "1pvname";
             var controller = this.CreateDeploymentController(deviceSelector, moduleLifeCycleManager, "storagename");
             KubernetesModule km1 = this.CreateKubernetesModuleWithHostConfig(moduleName, persistentVolumeName);
             var tokenSource = new CancellationTokenSource(DefaultTimeout * 3);
@@ -269,6 +269,20 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.IntegrationTest
             this.AssertNoPvcsExist();
         }
 
+        static Dictionary<string, ResourceQuantity> proxyLimits = new Dictionary<string, ResourceQuantity>
+        {
+            ["cpu"] = new ResourceQuantity("20m"),
+            ["memory"] = new ResourceQuantity("1000M"),
+        };
+        static Dictionary<string, ResourceQuantity> agentLimits = new Dictionary<string, ResourceQuantity>
+        {
+            ["cpu"] = new ResourceQuantity("150m"),
+            ["memory"] = new ResourceQuantity("1500Mi"),
+        };
+
+        static V1ResourceRequirements proxyReqs = new V1ResourceRequirements(proxyLimits, proxyLimits);
+        static V1ResourceRequirements agentReqs = new V1ResourceRequirements(agentLimits, agentLimits);
+
         private EdgeDeploymentController CreateDeploymentController(string deviceSelector, IModuleIdentityLifecycleManager moduleLifeCycleManager, string storageClassName)
         {
             var resourceName = new ResourceName("hostname", "deviceid");
@@ -286,6 +300,11 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.IntegrationTest
                 "trustBundlePath",
                 "trust-bundle-volume",
                 "trustBundleConfigMapName",
+                Option.Some(proxyReqs),
+                Option.Some("agentConfigMapName"),
+                Option.Some("agentConfigPath"),
+                Option.Some("agentConfigVolume"),
+                Option.Some(agentReqs),
                 PortMapServiceType.ClusterIP,
                 true,
                 storageClassName,

@@ -26,16 +26,16 @@ native-tls = "0.2"
 url = "2"
 url_serde = "0.2"
 
-aziot-cert-common-http = { git = "https://github.com/Azure/iot-identity-service", branch = "release/1.2" }
-aziot-identity-common = { git = "https://github.com/Azure/iot-identity-service", branch = "release/1.2" }
-aziot-identity-common-http = { git = "https://github.com/Azure/iot-identity-service", branch = "release/1.2" }
-aziot-key-client = { git = "https://github.com/Azure/iot-identity-service", branch = "release/1.2" }
-aziot-key-common = { git = "https://github.com/Azure/iot-identity-service", branch = "release/1.2" }
-aziot-key-common-http = { git = "https://github.com/Azure/iot-identity-service", branch = "release/1.2" }
-aziot-key-openssl-engine = { git = "https://github.com/Azure/iot-identity-service", branch = "release/1.2" }
-http-common = { git = "https://github.com/Azure/iot-identity-service", branch = "release/1.2" }
-openssl2 = { git = "https://github.com/Azure/iot-identity-service", branch = "release/1.2" }
-openssl-sys2 = { git = "https://github.com/Azure/iot-identity-service", branch = "release/1.2" }
+aziot-cert-common-http = { git = "https://github.com/levi106/iot-identity-service", branch = "1.2-k8s" }
+aziot-identity-common = { git = "https://github.com/levi106/iot-identity-service", branch = "1.2-k8s" }
+aziot-identity-common-http = { git = "https://github.com/levi106/iot-identity-service", branch = "1.2-k8s" }
+aziot-key-client = { git = "https://github.com/levi106/iot-identity-service", branch = "1.2-k8s" }
+aziot-key-common = { git = "https://github.com/levi106/iot-identity-service", branch = "1.2-k8s" }
+aziot-key-common-http = { git = "https://github.com/levi106/iot-identity-service", branch = "1.2-k8s" }
+aziot-key-openssl-engine = { git = "https://github.com/levi106/iot-identity-service", branch = "1.2-k8s" }
+http-common = { git = "https://github.com/levi106/iot-identity-service", branch = "1.2-k8s" }
+openssl2 = { git = "https://github.com/levi106/iot-identity-service", branch = "1.2-k8s" }
+openssl-sys2 = { git = "https://github.com/levi106/iot-identity-service", branch = "1.2-k8s" }
 
 docker = { path = "../docker-rs" }
 edgelet-core = { path = "../edgelet-core" }
@@ -43,9 +43,11 @@ edgelet-docker = { path = "../edgelet-docker" }
 edgelet-http = { path = "../edgelet-http" }
 edgelet-http-mgmt = { path = "../edgelet-http-mgmt" }
 edgelet-http-workload = { path = "../edgelet-http-workload" }
+edgelet-kube = { path = "../edgelet-kube", optional = true }
 edgelet-utils = { path = "../edgelet-utils" }
 cert-client = { path = "../cert-client" }
 identity-client = { path = "../identity-client" }
+kube-client = { path = "../kube-client", optional = true }
 
 [dev_dependencies]
 lazy_static = "1"
@@ -57,3 +59,4 @@ edgelet-test-utils = { path = "../edgelet-test-utils" }
 [features]
 default = ["runtime-docker"]
 runtime-docker = []
+runtime-kubernetes = ["edgelet-kube", "kube-client", "hyper-tls"]

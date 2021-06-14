@@ -24,6 +24,7 @@ PUBLISH_DIR=${BUILD_BINARIESDIRECTORY}/publish
 EDGELET_DIR=${BUILD_REPOSITORY_LOCALPATH}/edgelet
 BUILD_CONFIGURATION="release"
 BUILD_CONFIG_OPTION=
+CROSS="${CARGO_HOME:-"$HOME/.cargo"}/bin/cross"
 
 ###############################################################################
 # Function to obtain the underlying architecture and check if supported
@@ -118,11 +119,11 @@ process_args()
         fi
     done
 
-    if [[ ${PROJECT,,} == "aziot-edged" ]]; then
+#    if [[ ${PROJECT,,} == "aziot-edged" ]]; then
         LIBC="glibc"
-    else
-        LIBC="musl"
-    fi
+#    else
+#        LIBC="musl"
+#    fi
 
     case ${ARCH}_${LIBC} in
         amd64_musl) TARGET="x86_64-unknown-linux-musl";;
@@ -167,6 +168,12 @@ process_args()
         BUILD_CONFIGURATION='debug'
         BUILD_CONFIG_OPTION=''
     fi
+
+    if [[ ${PROJECT,,} == "aziot-edged" ]]; then
+        FEATURES_OPTION='--no-default-features --features runtime-kubernetes'
+    else
+        FEATURES_OPTION=''
+    fi
 }
 
 ###############################################################################
@@ -177,7 +184,7 @@ build_project()
     # build project with cross
     cd "$EDGELET_DIR"
 
-    execute cross build -p "$PROJECT" --manifest-path=aziot-edged/Cargo.toml --no-default-features --features runtime-kubernetes "$BUILD_CONFIG_OPTION" --target "$TARGET"
+    execute $CROSS build -p "$PROJECT" --manifest-path=${PROJECT}/Cargo.toml $FEATURES_OPTION "$BUILD_CONFIG_OPTION" --target "$TARGET"
     execute "$STRIP" "$EDGELET_DIR/target/$TARGET/$BUILD_CONFIGURATION/$PROJECT"
 
     # prepare docker folder
@@ -191,9 +198,9 @@ build_project()
     # copy binaries to publish folder
     execute cp "$EDGELET_DIR/target/$TARGET/$BUILD_CONFIGURATION/$PROJECT" "$EXE_DOCKER_DIR/"
 
-    if [[ ${PROJECT,,} == "aziot-edged" ]] && [[ ${BUILD_CONFIGURATION} == "release" ]]; then
-        execute cp "$EDGELET_DIR"/target/"$TARGET"/"$BUILD_CONFIGURATION"/build/hsm-sys-*/out/lib/*.so* "$EXE_DOCKER_DIR/"
-    fi
+    #if [[ ${PROJECT,,} == "aziot-edged" ]] && [[ ${BUILD_CONFIGURATION} == "release" ]]; then
+    #    execute cp "$EDGELET_DIR"/target/"$TARGET"/"$BUILD_CONFIGURATION"/build/hsm-sys-*/out/lib/*.so* "$EXE_DOCKER_DIR/"
+    #fi
 }
 
 ###############################################################################

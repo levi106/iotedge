@@ -8,10 +8,13 @@ members = [
     "edgelet-http",
     "edgelet-http-mgmt",
     "edgelet-http-workload",
+    "edgelet-kube",
     "edgelet-test-utils",
     "edgelet-utils",
+    "kube-client",
     "identity-client",
     "iotedge",
+    "iotedge-proxy",
     "management",
     "systemd",
 ]
