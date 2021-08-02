@@ -57,6 +57,8 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Core
 
         public const string GatewayHostnameVariableName = "IOTEDGE_GATEWAYHOSTNAME";
 
+        public const string UpstreamContainerRegistryVariableName = "IOTEDGE_UPSTREAMCONTAINERREGISTRY";
+
         public const string ParentEdgeHostnameVariableName = "IOTEDGE_PARENTHOSTNAME";
 
         public const string DeviceIdVariableName = "IOTEDGE_DEVICEID";

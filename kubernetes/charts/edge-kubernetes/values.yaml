@@ -1,26 +1,31 @@
 identityd:
   image:
     repository: crystalline407/aziot-identityd
-    tag: 1.2.1-k8s-preview-linux-amd64
+    tag: 1.2.1-k8s-alpha1-linux-amd64
     pullPolicy: Always
 
 keyd:
   image:
     repository: crystalline407/aziot-identityd
-    tag: 1.2.1-k8s-preview-linux-amd64
+    tag: 1.2.1-k8s-alpha1-linux-amd64
     pullPolicy: Always
 
 certd:
   image:
     repository: crystalline407/aziot-identityd
-    tag: 1.2.1-k8s-preview-linux-amd64
+    tag: 1.2.1-k8s-alpha1-linux-amd64
     pullPolicy: Always
+
+init:
+  image:
+    repository: azureiotedge/azureiotedge-runtime-base
+    tag: 1.2-linux-amd64
 
 # iotedged configuration
 iotedged:
   image:
     repository: crystalline407/aziot-edged
-    tag: 1.2.1-k8s-preview-linux-amd64
+    tag: 1.2.1-k8s-alpha1-linux-amd64
     pullPolicy: Always
   nodeSelector: {}
   # Volumes which support ownership management are modified to be owned and 
@@ -159,7 +164,7 @@ iotedged:
 iotedgedProxy:
   image:
     repository: crystalline407/aziot-proxy
-    tag: 1.2.1-k8s-preview-linux-amd64
+    tag: 1.2.1-k8s-alpha1-linux-amd64
     pullPolicy: Always
   resources:
     requests:
@@ -183,7 +188,7 @@ edgeAgent:
   containerName: edgeagent
   image:
     repository: crystalline407/azureiotedge-agent
-    tag: 1.2.1-k8s-preview-linux-amd64
+    tag: 1.2.1-k8s-alpha1-linux-amd64
     pullPolicy: Always
   hostname: "localhost"
   resources:

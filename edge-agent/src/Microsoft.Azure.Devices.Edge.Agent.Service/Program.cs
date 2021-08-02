@@ -189,6 +189,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Service
                         apiVersion = configuration.GetValue<string>(Constants.EdgeletApiVersionVariableName);
                         iothubHostname = configuration.GetValue<string>(Constants.IotHubHostnameVariableName);
                         deviceId = configuration.GetValue<string>(Constants.DeviceIdVariableName);
+                        string upstreamContainerRegistry = configuration.GetValue<string>(Constants.UpstreamContainerRegistryVariableName);
                         // Get additional k8s configuration from the configmap and environment.
                         IConfigurationRoot k8sConfiguration = new ConfigurationBuilder()
                             .AddJsonFile(K8sConfigFileName, true)
@@ -239,7 +240,8 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Service
                                 kubernetesExperimentalFeatures,
                                 moduleOwner,
                                 runAsNonRoot,
-                                operatorTimeout));
+                                operatorTimeout,
+                                upstreamContainerRegistry));
 
                         trustBundle = await CertificateHelper.GetTrustBundleFromEdgelet(new Uri(workloadUri), apiVersion, Constants.WorkloadApiVersion, moduleId, moduleGenerationId);
                         CertificateHelper.InstallCertificates(trustBundle, logger);

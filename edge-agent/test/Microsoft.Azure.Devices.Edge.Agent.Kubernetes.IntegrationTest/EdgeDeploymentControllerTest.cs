@@ -314,7 +314,8 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.IntegrationTest
                 new Uri("http://localhost:35000"),
                 false,
                 false,
-                experimentalFeatures == null ? new Dictionary<string, bool>() : experimentalFeatures);
+                experimentalFeatures == null ? new Dictionary<string, bool>() : experimentalFeatures,
+                "upstreamContainerRegistry");
             var pvcMapper = new KubernetesPvcMapper(true, storageClassName, 100);
             var serviceAccountMapper = new KubernetesServiceAccountMapper();
             return new EdgeDeploymentController(

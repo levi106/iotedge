@@ -267,15 +267,13 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.Test
             // Validate proxy container
             var proxyContainer = pod.Spec.Containers.Single(p => p.Name == "proxy");
             // Validate that there are 2 mounts for proxy container: config and trust-bundle
-            Assert.Equal(2, proxyContainer.VolumeMounts.Count);
+            Assert.Equal(1, proxyContainer.VolumeMounts.Count);
             Assert.Contains(proxyContainer.VolumeMounts, vm => vm.Name.Equals("configVolumeName"));
-            Assert.Contains(proxyContainer.VolumeMounts, vm => vm.Name.Equals("trustBundleVolumeName"));
 
             // Validate pod volumes
-            Assert.Equal(3, pod.Spec.Volumes.Count);
+            Assert.Equal(2, pod.Spec.Volumes.Count);
             Assert.Contains(pod.Spec.Volumes, v => v.Name.Equals("homeblah"));
             Assert.Contains(pod.Spec.Volumes, v => v.Name.Equals("configVolumeName"));
-            Assert.Contains(pod.Spec.Volumes, v => v.Name.Equals("trustBundleVolumeName"));
 
             // Validate no image pull secrets for public images
             Assert.Null(pod.Spec.ImagePullSecrets);
@@ -711,15 +709,13 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.Test
 
             // Validate proxy volume mounts
             var proxyContainer = deployment.Spec.Template.Spec.Containers.Single(p => p.Name == "proxy");
-            Assert.Equal(2, proxyContainer.VolumeMounts.Count);
+            Assert.Equal(1, proxyContainer.VolumeMounts.Count);
             Assert.Contains(proxyContainer.VolumeMounts, vm => vm.Name.Equals("configVolumeName"));
-            Assert.Contains(proxyContainer.VolumeMounts, vm => vm.Name.Equals("trustBundleVolumeName"));
 
             // Validate pod volumes
-            Assert.Equal(3, deployment.Spec.Template.Spec.Volumes.Count);
+            Assert.Equal(2, deployment.Spec.Template.Spec.Volumes.Count);
             Assert.Contains(deployment.Spec.Template.Spec.Volumes, v => v.Name.Equals("additional-volume"));
             Assert.Contains(deployment.Spec.Template.Spec.Volumes, v => v.Name.Equals("configVolumeName"));
-            Assert.Contains(deployment.Spec.Template.Spec.Volumes, v => v.Name.Equals("trustBundleVolumeName"));
         }
 
         [Fact]
@@ -747,15 +743,13 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.Test
 
             // Validate proxy volume mounts
             var proxyContainer = deployment.Spec.Template.Spec.Containers.Single(p => p.Name == "proxy");
-            Assert.Equal(2, proxyContainer.VolumeMounts.Count);
+            Assert.Equal(1, proxyContainer.VolumeMounts.Count);
             Assert.Contains(proxyContainer.VolumeMounts, vm => vm.Name.Equals("configVolumeName"));
-            Assert.Contains(proxyContainer.VolumeMounts, vm => vm.Name.Equals("trustBundleVolumeName"));
 
             // Validate pod volumes
-            Assert.Equal(4, deployment.Spec.Template.Spec.Volumes.Count);
+            Assert.Equal(3, deployment.Spec.Template.Spec.Volumes.Count);
             Assert.Equal(2, deployment.Spec.Template.Spec.Volumes.Count(v => v.Name.Equals("homeblah")));
             Assert.Contains(deployment.Spec.Template.Spec.Volumes, v => v.Name.Equals("configVolumeName"));
-            Assert.Contains(deployment.Spec.Template.Spec.Volumes, v => v.Name.Equals("trustBundleVolumeName"));
         }
 
         [Fact]
@@ -771,11 +765,11 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.Test
             var deployment = mapper.CreateDeployment(identity, module, labels);
 
             // 2 volumes for proxy by default
-            Assert.Equal(2, deployment.Spec.Template.Spec.Volumes.Count);
+            Assert.Equal(1, deployment.Spec.Template.Spec.Volumes.Count);
             var moduleContainer = deployment.Spec.Template.Spec.Containers.Single(container => container.Name == "module1");
             Assert.Equal(0, moduleContainer.VolumeMounts.Count);
             var proxyContainer = deployment.Spec.Template.Spec.Containers.Single(container => container.Name == "proxy");
-            Assert.Equal(2, proxyContainer.VolumeMounts.Count);
+            Assert.Equal(1, proxyContainer.VolumeMounts.Count);
         }
 
         [Fact]
@@ -1241,6 +1235,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.Test
                 new Uri("http://management"),
                 runAsNonRoot,
                 false,
-                experimentalFeatures == null ? new Dictionary<string, bool>() : experimentalFeatures);
+                experimentalFeatures == null ? new Dictionary<string, bool>() : experimentalFeatures,
+                "upstreamContainerRegistry");
     }
 }

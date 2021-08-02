@@ -20,6 +20,28 @@ spec:
         app.kubernetes.io/name: {{ include "edge-kubernetes.name" . }}-iotedged
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+      {{- if .Values.iotedged.certificates }}
+      {{- if .Values.iotedged.certificates.secret }}
+      initContainers:
+        - name: init-ca
+          command:
+          - sh
+          - -c
+          - |
+            mkdir /etc/ssl/certs
+            cp -f /etc/aziot/certificates/iotedge_config_cli_root.pem /usr/local/share/ca-certificates/iotedge_config_cli_root.pem.crt
+            update-ca-certificates
+          image: "{{ .Values.init.image.repository }}:{{ .Values.init.image.tag }}"
+          volumeMounts:
+          - name: edge-certs
+            mountPath: "/etc/aziot/certificates"
+            readOnly: true
+          - name: etc-ssl
+            mountPath: "/etc/ssl"
+          - name: ca-certificates
+            mountPath: "/usr/local/share/ca-certificates"
+      {{- end}}
+      {{- end}}
       containers:
         - name: aziot-identityd
           image: "{{ .Values.identityd.image.repository }}:{{ .Values.identityd.image.tag }}"
@@ -32,6 +54,17 @@ spec:
             readOnly: true
           - name: aziot-socket
             mountPath: /run/aziot
+          {{- with .Values.iotedged.certificates }}
+          {{- if .secret }}
+          - name: edge-certs
+            mountPath: "/etc/aziot/certificates"
+            readOnly: true
+          - name: etc-ssl
+            mountPath: "/etc/ssl"
+          - name: ca-certificates
+            mountPath: "/usr/local/share/ca-certificates"
+          {{- end}}
+          {{- end}}
         - name: aziot-keyd
           image: "{{ .Values.keyd.image.repository }}:{{ .Values.keyd.image.tag }}"
           imagePullPolicy: {{ .Values.keyd.image.pullPolicy }}
@@ -47,6 +80,13 @@ spec:
             readOnly: true
           - name: aziot-socket
             mountPath: /run/aziot
+          {{- with .Values.iotedged.certificates }}
+          {{- if .secret }}
+          - name: edge-certs
+            mountPath: "/etc/aziot/certificates"
+            readOnly: true
+          {{- end}}
+          {{- end}}
         - name: aziot-certd
           image: "{{ .Values.certd.image.repository }}:{{ .Values.certd.image.tag }}"
           imagePullPolicy: {{ .Values.certd.image.pullPolicy }}
@@ -58,10 +98,18 @@ spec:
             readOnly: true
           - name: aziot-socket
             mountPath: /run/aziot
+          {{- with .Values.iotedged.certificates }}
+          {{- if .secret }}
+          - name: edge-certs
+            mountPath: "/etc/aziot/certificates"
+            readOnly: true
+          {{- end}}
+          {{- end}}
         - name: iotedged
           image: "{{ .Values.iotedged.image.repository }}:{{ .Values.iotedged.image.tag }}"
           imagePullPolicy: {{ .Values.iotedged.image.pullPolicy }}
           command: ["/app/aziot-edged"]
+          #command: ["sh", "-c", "sleep 300000"]
           securityContext:
             runAsUser: 0
           {{- if .Values.iotedged.data.resources }}
@@ -94,7 +142,7 @@ spec:
           {{- with .Values.iotedged.certificates }}
           {{- if .secret }}
           - name: edge-certs
-            mountPath: "/etc/edgecerts"
+            mountPath: "/etc/aziot/certificates"
             readOnly: true
           {{- end}}
           {{- end}}
@@ -220,16 +268,20 @@ spec:
       {{- /*
         NOTE: This sets up iotedged with a volume "/etc/edgecerts" populated with the given CA certs.
       */}}
+      - name: etc-ssl
+        emptyDir: {}
+      - name: ca-certificates
+        emptyDir: {}
       - name: edge-certs
         secret:
           secretName: {{ .secret }}
           items:
-          - key: {{ .device_ca_cert | default "device_ca_cert" }}
-            path: device_ca_cert
-          - key: {{ .device_ca_pk | default "device_ca_pk" }}
-            path: device_ca_pk
+          - key: {{ .aziot_edged_ca_cert | default "aziot_edged_ca_cert" }}
+            path: aziot-edged-ca.full-chain.cert.pem
+          - key: {{ .aziot_edged_ca_pk | default "aziot_edged_ca_pk" }}
+            path: aziot-edged-ca.key.pem
           - key: {{ .trusted_ca_certs | default "trusted_ca_certs" }}
-            path: trusted_ca_certs
+            path: iotedge_config_cli_root.pem
 
       {{- end}}
       {{- else}}

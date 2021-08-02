@@ -45,6 +45,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.EdgeDeployment.Deploymen
         readonly bool runAsNonRoot;
         readonly bool enableServiceCallTracing;
         readonly IDictionary<string, bool> experimentalFeatures;
+        readonly string upstreamContainerRegistry;
 
         public KubernetesDeploymentMapper(
             string deviceNamespace,
@@ -71,7 +72,8 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.EdgeDeployment.Deploymen
             Uri managementUri,
             bool runAsNonRoot,
             bool enableServiceCallTracing,
-            IDictionary<string, bool> experimentalFeatures)
+            IDictionary<string, bool> experimentalFeatures,
+            string upstreamContainerRegistry)
         {
             this.deviceNamespace = deviceNamespace;
             this.edgeHostname = edgeHostname;
@@ -98,6 +100,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.EdgeDeployment.Deploymen
             this.runAsNonRoot = runAsNonRoot;
             this.enableServiceCallTracing = enableServiceCallTracing;
             this.experimentalFeatures = experimentalFeatures;
+            this.upstreamContainerRegistry = upstreamContainerRegistry;
         }
 
         public V1Deployment CreateDeployment(IModuleIdentity identity, KubernetesModule module, IDictionary<string, string> labels)
@@ -284,6 +287,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.EdgeDeployment.Deploymen
                 string.Equals(identity.ModuleId, CoreConstants.EdgeHubModuleIdentityName))
             {
                 envList.Add(new V1EnvVar(CoreConstants.EdgeDeviceHostNameKey, this.edgeHostname));
+                envList.Add(new V1EnvVar(CoreConstants.UpstreamContainerRegistryVariableName, this.upstreamContainerRegistry));
             }
             else
             {
@@ -429,13 +433,11 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.EdgeDeployment.Deploymen
             var volumeMounts = new List<V1VolumeMount>
             {
                 new V1VolumeMount { MountPath = this.proxyConfigPath, Name = this.proxyConfigVolumeName, ReadOnlyProperty = true },
-                // new V1VolumeMount { MountPath = this.proxyTrustBundlePath, Name = this.proxyTrustBundleVolumeName }
             };
 
             var volumes = new List<V1Volume>
             {
                 new V1Volume { Name = this.proxyConfigVolumeName, ConfigMap = new V1ConfigMapVolumeSource(name: this.proxyConfigMapName) },
-                // new V1Volume { Name = this.proxyTrustBundleVolumeName, ConfigMap = new V1ConfigMapVolumeSource(name: this.proxyTrustBundleConfigMapName) }
             };
 
             var resources = this.proxyResourceRequirements.OrDefault();

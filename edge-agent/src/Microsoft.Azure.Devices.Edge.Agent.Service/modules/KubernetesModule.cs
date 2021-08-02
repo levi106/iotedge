@@ -59,6 +59,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Service.Modules
         readonly KubernetesModuleOwner moduleOwner;
         readonly bool runAsNonRoot;
         readonly int operatorTimeout;
+        readonly string upstreamContainerRegistry;
 
         public KubernetesModule(
             string iotHubHostname,
@@ -85,7 +86,8 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Service.Modules
             KubernetesExperimentalFeatures experimentalFeatures,
             KubernetesModuleOwner moduleOwner,
             bool runAsNonRoot,
-            int operatorTimeout)
+            int operatorTimeout,
+            string upstreamContainerRegistry)
         {
             this.resourceName = new ResourceName(iotHubHostname, deviceId);
             this.edgeDeviceHostName = Preconditions.CheckNonWhiteSpace(edgeDeviceHostName, nameof(edgeDeviceHostName));
@@ -119,6 +121,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Service.Modules
             this.moduleOwner = moduleOwner;
             this.runAsNonRoot = runAsNonRoot;
             this.operatorTimeout = operatorTimeout;
+            this.upstreamContainerRegistry = upstreamContainerRegistry;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -268,7 +271,8 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Service.Modules
                             this.managementUri,
                             this.runAsNonRoot,
                             this.enableServiceCallTracing,
-                            this.experimentalFeatures.GetEnvVars()))
+                            this.experimentalFeatures.GetEnvVars(),
+                            this.upstreamContainerRegistry))
                 .As<IKubernetesDeploymentMapper>();
 
             // KubernetesServiceMapper

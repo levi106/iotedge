@@ -13,10 +13,10 @@ Create chart name and version as used by the chart label.
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{/* Template for iotedged's configuration YAML. */}}
+{{/* Template for iotedged's configuration TOML. */}}
 {{- define "edge-kubernetes.iotedgedconfig" }}
 homedir = "/var/lib/aziot/edged"
-hostname = {{ include "edge-kubernetes.name" . | quote }}
+hostname = {{ .Values.iotedged.hostname | default (printf "edgehub.%s.svc.cluster.local" .Release.Namespace ) | quote }}
 namespace = {{ include "edge-kubernetes.namespace" . | quote }}
 device_hub_selector = ""
 config_path = "/etc/edgeAgent"
@@ -24,6 +24,13 @@ config_map_name = "iotedged-agent-config"
 config_map_volume = "agent-config-volume"
 device_id = {{ include "edge-kubernetes.deviceid" . | quote }}
 iot_hub_hostname = {{ include "edge-kubernetes.hostname" . | quote }}
+{{- with .Values.iotedged.certificates }}
+{{ if .secret }}
+edge_ca_cert = "aziot-edged-ca"
+edge_ca_key = "aziot-edged-ca"
+trust_bundle_cert = "aziot-edged-trust-bundle"
+{{ end }}
+{{ end }}
 [provisioning]
 {{- range $key, $val := .Values.provisioning }}
 {{- if eq $key "attestation"}}
@@ -54,12 +61,6 @@ identity_pk = "file:///etc/edge-authentication/identity_pk"
 {{- end }}
 {{- end }}
 {{- with .Values.iotedged.certificates }}
-/*certificates:
-{{- if .secret }}
-device_ca_cert: "/etc/edgecerts/device_ca_cert"
-device_ca_pk: "/etc/edgecerts/device_ca_pk"
-trusted_ca_certs: "/etc/edgecerts/trusted_ca_certs"
-{{- end }}*/
 {{- if .auto_generated_ca_lifetime_days }}
 [edge_ca]
 auto_generated_edge_ca_expiry_days = {{ .auto_generated_ca_lifetime_days }}
@@ -199,6 +200,7 @@ Generate namespace from release namespace parameter.
 {{ .Release.Namespace }}
 {{- end -}}
 
+{{/* Template for identityd/config.d/00-super.toml. */}}
 {{- define "edge-kubernetes.identitydconfig" -}}
 hostname = {{ include "edge-kubernetes.hubname" . | quote }}
 homedir = "/var/lib/aziot/identityd"
@@ -207,6 +209,9 @@ homedir = "/var/lib/aziot/identityd"
 source = "manual"
 iothub_hostname = {{ include "edge-kubernetes.hostname" . | quote }}
 device_id = {{ include "edge-kubernetes.deviceid" . | quote }}
+{{- if .Values.iotedged.parentHostname }}
+local_gateway_hostname = {{ .Values.iotedged.parentHostname | quote }}
+{{- end }}
 
 [provisioning.authentication]
 method = "sas"
@@ -217,11 +222,17 @@ uid = 992
 name = "aziot-edge"
 {{- end -}}
 
+{{/* Template for keyd/config.d/00-super.toml. */}}
 {{- define "edge-kubernetes.keydconfig" -}}
 [aziot_keys]
 homedir_path = "/var/lib/aziot/keyd"
 
 [preloaded_keys]
+{{- with .Values.iotedged.certificates }}
+{{- if .secret }}
+aziot-edged-ca = "file:///etc/aziot/certificates/aziot-edged-ca.key.pem"
+{{- end }}
+{{ end }}
 device-id = "file:///var/secrets/aziot/keyd/device-id"
 
 [[principal]]
@@ -237,6 +248,7 @@ uid = 994
 keys = ["aziot-edged-ca"]
 {{- end -}}
 
+{{/* Template for certd/config.d/00-super.toml. */}}
 {{- define "edge-kubernetes.certdconfig" -}}
 homedir_path = "/var/lib/aziot/certd"
 [cert_issuance.aziot-edged-ca]
@@ -246,6 +258,12 @@ expiry_days = 90
 
 [preloaded_certs]
 aziot-edged-trust-bundle = ["aziot-edged-ca"]
+{{- with .Values.iotedged.certificates }}
+{{- if .secret }}
+aziot-edged-ca = "file:///etc/aziot/certificates/aziot-edged-ca.full-chain.cert.pem"
+trust-bundle-user = "file:///etc/aziot/certificates/iotedge_config_cli_root.pem"
+{{- end }}
+{{ end }}
 
 [[principal]]
 uid = 992
