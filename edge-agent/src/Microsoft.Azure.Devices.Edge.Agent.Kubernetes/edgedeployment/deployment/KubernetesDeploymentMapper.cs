@@ -287,12 +287,15 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Kubernetes.EdgeDeployment.Deploymen
                 string.Equals(identity.ModuleId, CoreConstants.EdgeHubModuleIdentityName))
             {
                 envList.Add(new V1EnvVar(CoreConstants.EdgeDeviceHostNameKey, this.edgeHostname));
-                envList.Add(new V1EnvVar(CoreConstants.UpstreamContainerRegistryVariableName, this.upstreamContainerRegistry));
+                if (!string.IsNullOrEmpty(this.upstreamContainerRegistry))
+                {
+                    envList.Add(new V1EnvVar(CoreConstants.UpstreamContainerRegistryVariableName, this.upstreamContainerRegistry));
+                }
             }
             else
             {
                 envList.Add(new V1EnvVar(CoreConstants.EdgeDeviceHostNameKey, this.edgeHostname));
-                envList.Add(new V1EnvVar(CoreConstants.GatewayHostnameVariableName, EdgeHubHostname));
+                envList.Add(new V1EnvVar(CoreConstants.GatewayHostnameVariableName, $"{identity.DeploymentName()}.{this.deviceNamespace}.svc.cluster.local"));
             }
 
             return envList;

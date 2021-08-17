@@ -93,6 +93,8 @@ ExperimentalFeatures__EnableK8SExtensions = {{ $envval | quote }}
 SendRuntimeQualityTelemetry = {{ $envval | quote }}
 {{- else if eq $envkey "runAsNonRoot" }}
 RunAsNonRoot = {{ $envval | quote }}
+{{- else if eq $envkey "upstreamContainerRegistry" }}
+IOTEDGE_UPSTREAMCONTAINERREGISTRY = {{ $envval | quote }}
 {{- else }}
 {{ $envkey }} = {{$envval | quote }}
 {{- end }}

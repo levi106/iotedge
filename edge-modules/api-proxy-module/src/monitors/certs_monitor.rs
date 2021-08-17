@@ -32,8 +32,11 @@ pub fn start(
         env::var("IOTEDGE_MODULEID").context(format!("Missing env var {}", "IOTEDGE_MODULEID"))?;
     let generation_id = env::var("IOTEDGE_MODULEGENERATIONID")
         .context(format!("Missing env var {}", "IOTEDGE_MODULEGENERATIONID"))?;
-    let gateway_hostname = env::var("IOTEDGE_GATEWAYHOSTNAME")
-        .context(format!("Missing env var {}", "IOTEDGE_GATEWAYHOSTNAME"))?;
+    let gateway_hostname = match env::var("IOTEDGE_APIPROXYHOSTNAME") {
+        Ok(h) => h,
+        Err(_) => env::var("IOTEDGE_GATEWAYHOSTNAME")
+                  .context(format!("Missing env var {}", "IOTEDGE_GATEWAYHOSTNAME"))?
+    };
     let workload_url = env::var("IOTEDGE_WORKLOADURI")
         .context(format!("Missing env var {}", "IOTEDGE_WORKLOADURI"))?;
     let mut cert_monitor = CertificateMonitor::new(
