@@ -23,9 +23,8 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Core
             if (matchHost.Success
                 && (matchHost.Groups["post"]?.Length > 0))
             {
-                string hostAddress = env.GetVariable(Core.Constants.UpstreamContainerRegistryVariableName)
-                    .GetOrElse(() => env.GetVariable(Core.Constants.GatewayHostnameVariableName).
-                        Expect(() => new InvalidOperationException($"Could not find environment variable: {Core.Constants.GatewayHostnameVariableName}")));
+                string hostAddress = env.GetVariable(Core.Constants.GatewayHostnameVariableName).
+                        Expect(() => new InvalidOperationException($"Could not find environment variable: {Core.Constants.GatewayHostnameVariableName}"));
 
                 parsedURI = Option.Some(matchHost.Groups["pre"].Value + hostAddress + matchHost.Groups["post"].Value);
             }
